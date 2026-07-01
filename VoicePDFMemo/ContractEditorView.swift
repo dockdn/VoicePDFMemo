@@ -186,8 +186,8 @@ struct ContractEditorView: View {
 
     private var datesCard: some View {
         card(title: "Project Dates") {
-            fieldTextField("Approximate Start Date", id: "startDate")
-            fieldTextField("Approximate Completion Date", id: "completionDate")
+            dateField("Approximate Start Date", id: "startDate")
+            dateField("Approximate Completion Date", id: "completionDate")
         }
     }
 
@@ -353,6 +353,26 @@ struct ContractEditorView: View {
         }
     }
 
+    private func dateField(_ label: String, id: String) -> some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text(label)
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            DatePicker(
+                label,
+                selection: dateBinding(for: id),
+                displayedComponents: .date
+            )
+            .datePickerStyle(.compact)
+            .labelsHidden()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .onTapGesture {
+                selectedField = id
+            }
+        }
+    }
+
     private func twoColumnMoneyRow(_ label: String, amountID: String, percentID: String) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(label)
@@ -377,6 +397,29 @@ struct ContractEditorView: View {
             get: { fields[id] ?? "" },
             set: { fields[id] = $0 }
         )
+    }
+
+    private func dateBinding(for id: String) -> Binding<Date> {
+        Binding(
+            get: { parsedDate(from: fields[id]) ?? Date() },
+            set: {
+                fields[id] = Self.contractDateFormatter.string(from: $0)
+                selectedField = id
+            }
+        )
+    }
+
+    private func parsedDate(from value: String?) -> Date? {
+        let trimmed = (value ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+
+        for formatter in Self.contractDateParsers {
+            if let date = formatter.date(from: trimmed) {
+                return date
+            }
+        }
+
+        return nil
     }
 
     private func combinedText(base: String, addition: String) -> String {
@@ -467,6 +510,31 @@ struct ContractEditorView: View {
         fields["financeCompletion"] = "$0"
         fields["financeCompletionPercent"] = "0%"
     }
+
+    private static let contractDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateFormat = "M/d/yy"
+        return formatter
+    }()
+
+    private static let contractDateParsers: [DateFormatter] = {
+        let formats = [
+            "M/d/yy",
+            "M/d/yyyy",
+            "MM/dd/yy",
+            "MM/dd/yyyy"
+        ]
+
+        return formats.map { format in
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.calendar = Calendar(identifier: .gregorian)
+            formatter.dateFormat = format
+            return formatter
+        }
+    }()
 }
 
 struct ShareSheet: UIViewControllerRepresentable {
