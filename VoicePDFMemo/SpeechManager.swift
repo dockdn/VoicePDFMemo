@@ -12,12 +12,13 @@ final class SpeechManager: NSObject, ObservableObject {
     private var request: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
 
+    // permissions
     func requestPermissions() {
         SFSpeechRecognizer.requestAuthorization { _ in }
-
         AVAudioSession.sharedInstance().requestRecordPermission { _ in }
     }
 
+    // recording lifecycle
     func startRecording() {
         recognitionTask?.cancel()
         recognitionTask = nil

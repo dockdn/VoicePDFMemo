@@ -2,7 +2,6 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var contractStore = ContractStore()
-
     @State private var searchText = ""
     @State private var contractToDelete: SavedContract?
 

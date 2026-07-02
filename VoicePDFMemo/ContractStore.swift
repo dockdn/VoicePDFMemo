@@ -4,7 +4,6 @@ import SwiftUI
 
 final class ContractStore: ObservableObject {
     @Published var contracts: [SavedContract] = []
-
     private let fileName = "saved_contracts.json"
 
     init() {
@@ -64,6 +63,7 @@ final class ContractStore: ObservableObject {
         return trimmed.isEmpty ? "Untitled Contract" : trimmed
     }
 
+    // MARK: - Disk Storage
     private func saveToDisk() {
         do {
             let data = try JSONEncoder().encode(contracts)

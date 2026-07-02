@@ -3,13 +3,13 @@ import UIKit
 
 struct SignatureCaptureView: View {
     @Binding var signatureImageData: Data?
-
     @State private var committedStrokes: [[CGPoint]] = []
     @State private var activeStroke: [CGPoint] = []
     @State private var canvasSize: CGSize = .zero
     @State private var renderedBaseImage: UIImage?
     @State private var lastPersistedSignatureData: Data?
 
+    // drawing surface
     var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -82,6 +82,7 @@ struct SignatureCaptureView: View {
         .background(Color.white)
     }
 
+    // path building
     private func addStrokes(_ strokes: [[CGPoint]], to path: inout Path) {
         for stroke in strokes where !stroke.isEmpty {
             if stroke.count == 1, let point = stroke.first {
@@ -102,6 +103,7 @@ struct SignatureCaptureView: View {
         canvasSize = newSize
     }
 
+    // sync with saved image data
     private func syncFromBinding() {
         if signatureImageData == lastPersistedSignatureData {
             return
@@ -116,6 +118,7 @@ struct SignatureCaptureView: View {
         }
     }
 
+    // export the current strokes as png
     private func persistSignature(using size: CGSize) {
         let targetSize = resolvedCanvasSize(from: size)
         guard targetSize.width > 1, targetSize.height > 1 else { return }
